@@ -5,9 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.function.Consumer;
-
-import javafx.application.Platform;
-import javafx.scene.control.ListView;
 /*
  * Clicker: A: I really get it    B: No idea what you are talking about
  * C: kind of following
@@ -22,7 +19,6 @@ public class Server{
 	
 	
 	Server(Consumer<Serializable> call){
-	
 		callback = call;
 		server = new TheServer();
 		server.start();

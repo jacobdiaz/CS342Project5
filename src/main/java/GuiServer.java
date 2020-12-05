@@ -1,9 +1,6 @@
 
-import java.util.HashMap;
-
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -16,6 +13,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
+import java.util.HashMap;
 
 public class GuiServer extends Application{
 
@@ -54,7 +53,6 @@ public class GuiServer extends Application{
 					Platform.runLater(()->{
 						listItems.getItems().add(data.toString());
 					});
-
 				});
 											
 		});
@@ -73,17 +71,18 @@ public class GuiServer extends Application{
 							
 											clientConnection.start();
 		});
-		
+
+		// Start GUI
 		this.buttonBox = new HBox(400, serverChoice, clientChoice);
 		startPane = new BorderPane();
 		startPane.setPadding(new Insets(70));
 		startPane.setCenter(buttonBox);
-		
 		startScene = new Scene(startPane, 800,800);
 		
 		listItems = new ListView<String>();
 		listItems2 = new ListView<String>();
-		
+
+		// Client GUI
 		c1 = new TextField();
 		b1 = new Button("Send");
 		b1.setOnAction(e->{clientConnection.send(c1.getText()); c1.clear();});
@@ -100,33 +99,22 @@ public class GuiServer extends Application{
                 System.exit(0);
             }
         });
-		
-		 
-		
+
 		primaryStage.setScene(startScene);
 		primaryStage.show();
-		
 	}
 	
 	public Scene createServerGui() {
-		
 		BorderPane pane = new BorderPane();
 		pane.setPadding(new Insets(70));
 		pane.setStyle("-fx-background-color: coral");
-		
 		pane.setCenter(listItems);
-	
 		return new Scene(pane, 500, 400);
-		
-		
 	}
 	
 	public Scene createClientGui() {
-		
 		clientBox = new VBox(10, c1,b1,listItems2);
 		clientBox.setStyle("-fx-background-color: blue");
-		return new Scene(clientBox, 400, 300);
-		
+		return new Scene(clientBox, 400, 700);
 	}
-
 }
