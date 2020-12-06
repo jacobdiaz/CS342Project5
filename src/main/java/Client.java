@@ -17,6 +17,7 @@ public class Client extends Thread{
 		callback = call;
 	}
 	public void run() {
+		System.out.println("Client");
 		try {
 		socketClient= new Socket("127.0.0.1",5555);
 	    out = new ObjectOutputStream(socketClient.getOutputStream());
@@ -28,13 +29,15 @@ public class Client extends Thread{
 		while(true) {
 			// TODO Get list of current clients from the server.
 			try {
-			String message = in.readObject().toString();
-			callback.accept(message);
+//			String message = in.readObject().toString();
+			DataPackage data = (DataPackage)in.readObject();
+			System.out.println("Go something");
+			callback.accept(data);
 			}
 			catch(Exception e) {}
 		}
     }
-	public void send(String data) {
+	public void send(Object data) {
 		try {
 			out.writeObject(data);
 		} catch (IOException e) {

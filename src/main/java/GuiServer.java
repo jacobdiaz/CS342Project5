@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -31,7 +32,7 @@ public class GuiServer extends Application{
 	
 	ListView<String> listItems, listItems2, listOfClients;
 	Button viewClientsBtn;
-
+	Label clientsLabel;
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -62,9 +63,15 @@ public class GuiServer extends Application{
 		this.clientChoice.setOnAction(e-> {primaryStage.setScene(sceneMap.get("client"));
 											primaryStage.setTitle("This is a client");
 											clientConnection = new Client(data->{
-							Platform.runLater(()->{
-								listItems2.getItems().add(data.toString());
-							});
+												DataPackage dp = (DataPackage) data; // Dp is sent from
+
+												Platform.runLater(() -> {
+														System.out.println(dp.getData());
+														clientsLabel.setStyle("-fx-text-fill: white;");
+														clientsLabel.setText("Clients On Server: (Client Number) "+dp.getData().toString());
+														listItems2.getItems().add(data.toString());
+													});
+
 							});
 											clientConnection.start();
 		});
@@ -84,12 +91,13 @@ public class GuiServer extends Application{
 		b1 = new Button("Send");
 		b1.setOnAction(e->{clientConnection.send(c1.getText()); c1.clear();});
 
-		// View Clients
+		// View Clients btn
 		viewClientsBtn = new Button("View Clients");
 		viewClientsBtn.setOnAction(e->{
-			System.out.println("View Client Button Pressed");
-			clientConnection.send("VIEW");
+			DataPackage dataPackage = new DataPackage("LIST","");
+			clientConnection.send(dataPackage);
 		});
+		clientsLabel = new Label();
 
 		sceneMap = new HashMap<String, Scene>();
 		
@@ -117,8 +125,8 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createClientGui() {
-		clientBox = new VBox(10, c1,b1,listItems2, viewClientsBtn);
+		clientBox = new VBox(10, listItems2,c1,b1,viewClientsBtn, clientsLabel);
 		clientBox.setStyle("-fx-background-color: blue");
-		return new Scene(clientBox, 400, 700);
+		return new Scene(clientBox, 500, 600);
 	}
 }
