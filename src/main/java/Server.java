@@ -5,10 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.function.Consumer;
-/*
- * Clicker: A: I really get it    B: No idea what you are talking about
- * C: kind of following
- */
+
 
 public class Server{
 
@@ -17,24 +14,19 @@ public class Server{
 	TheServer server;
 	private Consumer<Serializable> callback;
 	
-	
 	Server(Consumer<Serializable> call){
 		callback = call;
 		server = new TheServer();
 		server.start();
 	}
 	
-	
 	public class TheServer extends Thread{
-		
 		public void run() {
 		
 			try(ServerSocket mysocket = new ServerSocket(5555);){
 		    System.out.println("Server is waiting for a client!");
-		  
 			
 		    while(true) {
-		
 				ClientThread c = new ClientThread(mysocket.accept(), count);
 				callback.accept("client has connected to server: " + "client #" + count);
 				clients.add(c);
@@ -49,11 +41,11 @@ public class Server{
 				}
 			}//end of while
 		}
-	
 
 		class ClientThread extends Thread{
-			
-		
+			// We want a method for each client to get the list of all clients on the server
+			// In order to do this the server must send OUT data to the client
+			// Then the client must get IN the data and display it to the GUI
 			Socket connection;
 			int count;
 			ObjectInputStream in;
@@ -63,7 +55,10 @@ public class Server{
 				this.connection = s;
 				this.count = count;	
 			}
-			
+
+			// TODO to create a group chat of clients do clients.get() all the selected groups
+			// TODO We will add clients to a some list data structure and loop thropugh the list sending a message to all the clients
+			// Writes a message to all clients
 			public void updateClients(String message) {
 				for(int i = 0; i < clients.size(); i++) {
 					ClientThread t = clients.get(i);
@@ -73,36 +68,57 @@ public class Server{
 					catch(Exception e) {}
 				}
 			}
-			
+
+
+			public void updateClientList(){
+					System.out.println("in updateClientList()");
+					// Get all the clients from the list
+					for (int i = 0; i < clients.size() ; i++) {
+						System.out.println("Client #" + i);
+					}
+			}
+
 			public void run(){
-					
+				int flag = 1;
+				String message;
+
 				try {
 					in = new ObjectInputStream(connection.getInputStream());
 					out = new ObjectOutputStream(connection.getOutputStream());
-					connection.setTcpNoDelay(true);	
+					connection.setTcpNoDelay(true);
 				}
 				catch(Exception e) {
 					System.out.println("Streams not open");
 				}
-				
+
 				updateClients("new client on server: client #"+count);
-					
+
 				 while(true) {
 					    try {
-					    	String data = in.readObject().toString();
-					    	callback.accept("client: " + count + " sent: " + data);
-					    	updateClients("client #"+count+" said: "+data);
-					    	
+//					    	String data = in.readObject().toString();
+//							System.out.println("Data"+data);
+//					    	callback.accept("client: " + count + " sent: " + data);
+//					    	updateClients("client #"+count+" said: "+data);
+							String data = in.readObject().toString();
+							System.out.println("Incoming data:"+ data);
+
+							if(data.equals("VIEW")){
+								updateClientList();
+							}
+							else{
+								//print a message to everyone
+								callback.accept("Client:" + count + "send: "+ data);
+								updateClients("client #"+count+" said "+ data);
+							}
 					    	}
 					    catch(Exception e) {
-					    	callback.accept("OOOOPPs...Something wrong with the socket from client: " + count + "....closing down!");
-					    	updateClients("Client #"+count+" has left the server!");
-					    	clients.remove(this);
+//					    	callback.accept("OOOOPPs...Something wrong with the socket from client: " + count + "....closing down!");
+//					    	updateClients("Client #"+count+" has left the server!");
+//					    	clients.remove(this);
 					    	break;
 					    }
 					}
 				}//end of run
-			
 			
 		}//end of client thread
 }

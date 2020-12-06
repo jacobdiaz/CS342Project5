@@ -18,7 +18,6 @@ import java.util.HashMap;
 
 public class GuiServer extends Application{
 
-	
 	TextField s1,s2,s3,s4, c1;
 	Button serverChoice,clientChoice,b1;
 	HashMap<String, Scene> sceneMap;
@@ -30,11 +29,10 @@ public class GuiServer extends Application{
 	Server serverConnection;
 	Client clientConnection;
 	
-	ListView<String> listItems, listItems2;
-	
-	
+	ListView<String> listItems, listItems2, listOfClients;
+	Button viewClientsBtn;
+
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		launch(args);
 	}
 
@@ -53,11 +51,10 @@ public class GuiServer extends Application{
 					Platform.runLater(()->{
 						listItems.getItems().add(data.toString());
 					});
-				});
+		});
 											
 		});
-		
-		
+
 		this.clientChoice = new Button("Client");
 		this.clientChoice.setStyle("-fx-pref-width: 300px");
 		this.clientChoice.setStyle("-fx-pref-height: 300px");
@@ -65,10 +62,10 @@ public class GuiServer extends Application{
 		this.clientChoice.setOnAction(e-> {primaryStage.setScene(sceneMap.get("client"));
 											primaryStage.setTitle("This is a client");
 											clientConnection = new Client(data->{
-							Platform.runLater(()->{listItems2.getItems().add(data.toString());
-											});
+							Platform.runLater(()->{
+								listItems2.getItems().add(data.toString());
 							});
-							
+							});
 											clientConnection.start();
 		});
 
@@ -86,7 +83,14 @@ public class GuiServer extends Application{
 		c1 = new TextField();
 		b1 = new Button("Send");
 		b1.setOnAction(e->{clientConnection.send(c1.getText()); c1.clear();});
-		
+
+		// View Clients
+		viewClientsBtn = new Button("View Clients");
+		viewClientsBtn.setOnAction(e->{
+			System.out.println("View Client Button Pressed");
+			clientConnection.send("VIEW");
+		});
+
 		sceneMap = new HashMap<String, Scene>();
 		
 		sceneMap.put("server",  createServerGui());
@@ -103,7 +107,7 @@ public class GuiServer extends Application{
 		primaryStage.setScene(startScene);
 		primaryStage.show();
 	}
-	
+
 	public Scene createServerGui() {
 		BorderPane pane = new BorderPane();
 		pane.setPadding(new Insets(70));
@@ -113,7 +117,7 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createClientGui() {
-		clientBox = new VBox(10, c1,b1,listItems2);
+		clientBox = new VBox(10, c1,b1,listItems2, viewClientsBtn);
 		clientBox.setStyle("-fx-background-color: blue");
 		return new Scene(clientBox, 400, 700);
 	}

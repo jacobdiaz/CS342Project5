@@ -16,7 +16,6 @@ public class Client extends Thread{
 	Client(Consumer<Serializable> call){
 		callback = call;
 	}
-	
 	public void run() {
 		try {
 		socketClient= new Socket("127.0.0.1",5555);
@@ -27,16 +26,14 @@ public class Client extends Thread{
 		catch(Exception e) {}
 		
 		while(true) {
-
+			// TODO Get list of current clients from the server.
 			try {
 			String message = in.readObject().toString();
 			callback.accept(message);
 			}
 			catch(Exception e) {}
 		}
-	
     }
-	
 	public void send(String data) {
 		try {
 			out.writeObject(data);
@@ -44,6 +41,4 @@ public class Client extends Thread{
 			e.printStackTrace();
 		}
 	}
-
-
 }
