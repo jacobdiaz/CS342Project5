@@ -19,11 +19,11 @@ import java.util.HashMap;
 
 public class GuiServer extends Application{
 
-	TextField s1,s2,s3,s4, messageTextField;
-	Button serverChoice,clientChoice, sendBtn;
+	TextField s1,s2,s3,s4, messageTextField,directMessageTextField,recipientsTextField;
+	Button serverChoice,clientChoice, sendToAllBtn;
 	HashMap<String, Scene> sceneMap;
 	GridPane grid;
-	HBox buttonBox;
+	HBox buttonBox, directMessageContainer;
 	VBox clientBox;
 	Scene startScene;
 	BorderPane startPane;
@@ -31,7 +31,7 @@ public class GuiServer extends Application{
 	Client clientConnection;
 	
 	ListView<String> listItems, listItems2, listOfClients;
-	Button viewClientsBtn;
+	Button viewClientsBtn, sendDirectMessageBtn;
 	Label clientsLabel;
 	public static void main(String[] args) {
 		launch(args);
@@ -75,10 +75,23 @@ public class GuiServer extends Application{
 														System.out.println(dp.getData());
 														listItems2.getItems().add(((DataPackage) data).getData().toString());
 													});
+													if(dp.getType().equals("DM")){
+														Platform.runLater(()->{
+															System.out.println(dp.getData());
+														});
+													}
+												}
+
+												if(dp.getType().equals("DM")){
+													Platform.runLater(()->{
+														System.out.println(dp.getData());
+														listItems2.getItems().add(((DataPackage) data).getData().toString());
+													});
 												}
 							});
 											clientConnection.start();
 		});
+
 
 		// Start GUI
 		this.buttonBox = new HBox(400, serverChoice, clientChoice);
@@ -92,23 +105,37 @@ public class GuiServer extends Application{
 
 		// Client GUI
 		messageTextField = new TextField();
-		sendBtn = new Button("Send");
-		sendBtn.setOnAction(e->{
-			DataPackage dataPackage = new DataPackage("MESSAGE", messageTextField.getText());
-			clientConnection.send(dataPackage);
+		sendToAllBtn = new Button("Send to all!");
+		sendToAllBtn.setOnAction(e->{
+			DataPackage messagePackage = new DataPackage("MESSAGE", messageTextField.getText());
+			clientConnection.send(messagePackage);
 			messageTextField.clear();
 		});
 
 		// View Clients btn
 		viewClientsBtn = new Button("View Clients");
 		viewClientsBtn.setOnAction(e->{
-			DataPackage dataPackage = new DataPackage("LIST","");
-			clientConnection.send(dataPackage);
+			DataPackage listPackage = new DataPackage("LIST");
+			clientConnection.send(listPackage);
 		});
 		clientsLabel = new Label();
 
+		// Direct Message btn
+		directMessageContainer = new HBox(12);
+		directMessageTextField = new TextField("Message");
+		recipientsTextField = new TextField("Recipients");
+		sendDirectMessageBtn = new Button("Send Direct Message");
+		sendDirectMessageBtn.setOnAction(e->{
+			if(directMessageTextField != null && recipientsTextField.getText() != null) {
+				DataPackage dmPackage = new DataPackage("DM", directMessageTextField.getText(), recipientsTextField.getText());
+				clientConnection.send(dmPackage);
+				directMessageTextField.clear();
+				recipientsTextField.clear();
+			}
+		});
+		directMessageContainer.getChildren().addAll(directMessageTextField,recipientsTextField);
+
 		sceneMap = new HashMap<String, Scene>();
-		
 		sceneMap.put("server",  createServerGui());
 		sceneMap.put("client",  createClientGui());
 		
@@ -133,7 +160,7 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createClientGui() {
-		clientBox = new VBox(10, listItems2, messageTextField, sendBtn,viewClientsBtn, clientsLabel);
+		clientBox = new VBox(10, listItems2, messageTextField, sendToAllBtn,viewClientsBtn, clientsLabel,directMessageContainer,sendDirectMessageBtn);
 		clientBox.setStyle("-fx-background-color: blue");
 		return new Scene(clientBox, 500, 600);
 	}

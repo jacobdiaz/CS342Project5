@@ -22,7 +22,7 @@ public class Server{
 	public class TheServer extends Thread{
 		public void run() {
 		
-			try(ServerSocket mysocket = new ServerSocket(5555);){
+			try(ServerSocket mysocket = new ServerSocket(5555)){
 		    System.out.println("______ SERVER ______");
 			
 		    while(true) {
@@ -43,9 +43,6 @@ public class Server{
 
 
 		class ClientThread extends Thread{
-			// We want a method for each client to get the list of all clients on the server
-			// In order to do this the server must send OUT data to the client
-			// Then the client must get IN the data and display it to the GUI
 			Socket connection;
 			int count;
 			ObjectInputStream in;
@@ -83,6 +80,18 @@ public class Server{
 						}catch (Exception e){e.printStackTrace();}
 			}
 
+			public void sendToRecipients(DataPackage data){
+				try{
+					String recipients = data.getRecipients();
+					String []listOfRecipients = recipients.split("\\W+"); // Get each client number from recipient text
+					for (int i = 0; i < listOfRecipients.length; i++) {
+						int r = Integer.parseInt(listOfRecipients[i]);
+						ClientThread t = clients.get(r-1);
+						t.out.writeObject(data);
+					}
+				}catch (Exception e){e.printStackTrace();}
+			}
+
 
 			public void run(){
 				int flag = 1;
@@ -111,6 +120,11 @@ public class Server{
 									data.printDetails();
 									callback.accept("Client:" + count + "send: " + data.getData());
 									updateClients("client #" + count + " said " + data.getData());
+								}
+								if(dataType.equals("DM")){
+									callback.accept("(Grouped message) Client:" + count + "send: " + data.getData());
+									data.printDmDetails();
+									sendToRecipients(data);
 								}
 					    	}
 					    catch(Exception e) {
