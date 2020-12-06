@@ -31,7 +31,6 @@ public class Client extends Thread{
 			try {
 //			String message = in.readObject().toString();
 			DataPackage data = (DataPackage)in.readObject();
-			System.out.println("Go something");
 			callback.accept(data);
 			}
 			catch(Exception e) {}

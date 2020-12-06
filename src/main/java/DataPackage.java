@@ -15,4 +15,7 @@ class DataPackage implements Serializable {
     public void setData(Object data) { this.data = data; }
     public String getType() { return type; }
     public Object getData() { return data; }
+    public void printDetails(){
+        System.out.println("DataPackage Type:\t"+this.getType()+"\nDataPackage Message: \t"+this.getData()+"\n"); // Send dataPackage back to client
+    }
 }

@@ -19,8 +19,8 @@ import java.util.HashMap;
 
 public class GuiServer extends Application{
 
-	TextField s1,s2,s3,s4, c1;
-	Button serverChoice,clientChoice,b1;
+	TextField s1,s2,s3,s4, messageTextField;
+	Button serverChoice,clientChoice, sendBtn;
 	HashMap<String, Scene> sceneMap;
 	GridPane grid;
 	HBox buttonBox;
@@ -61,17 +61,21 @@ public class GuiServer extends Application{
 		this.clientChoice.setStyle("-fx-pref-height: 300px");
 		
 		this.clientChoice.setOnAction(e-> {primaryStage.setScene(sceneMap.get("client"));
-											primaryStage.setTitle("This is a client");
+											primaryStage.setTitle("Client");
 											clientConnection = new Client(data->{
 												DataPackage dp = (DataPackage) data; // Dp is sent from
-
-												Platform.runLater(() -> {
-														System.out.println(dp.getData());
+												if (dp.getType().equals("LIST")){
+													Platform.runLater(()->{
 														clientsLabel.setStyle("-fx-text-fill: white;");
 														clientsLabel.setText("Clients On Server: (Client Number) "+dp.getData().toString());
-														listItems2.getItems().add(data.toString());
 													});
-
+												}
+												if(dp.getType().equals("MESSAGE")) {
+													Platform.runLater(() -> {
+														System.out.println(dp.getData());
+														listItems2.getItems().add(((DataPackage) data).getData().toString());
+													});
+												}
 							});
 											clientConnection.start();
 		});
@@ -87,9 +91,13 @@ public class GuiServer extends Application{
 		listItems2 = new ListView<String>();
 
 		// Client GUI
-		c1 = new TextField();
-		b1 = new Button("Send");
-		b1.setOnAction(e->{clientConnection.send(c1.getText()); c1.clear();});
+		messageTextField = new TextField();
+		sendBtn = new Button("Send");
+		sendBtn.setOnAction(e->{
+			DataPackage dataPackage = new DataPackage("MESSAGE", messageTextField.getText());
+			clientConnection.send(dataPackage);
+			messageTextField.clear();
+		});
 
 		// View Clients btn
 		viewClientsBtn = new Button("View Clients");
@@ -125,7 +133,7 @@ public class GuiServer extends Application{
 	}
 	
 	public Scene createClientGui() {
-		clientBox = new VBox(10, listItems2,c1,b1,viewClientsBtn, clientsLabel);
+		clientBox = new VBox(10, listItems2, messageTextField, sendBtn,viewClientsBtn, clientsLabel);
 		clientBox.setStyle("-fx-background-color: blue");
 		return new Scene(clientBox, 500, 600);
 	}

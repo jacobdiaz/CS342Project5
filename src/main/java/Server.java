@@ -57,10 +57,11 @@ public class Server{
 			}
 
 			public void updateClients(String message) {
+				DataPackage data = new DataPackage("MESSAGE", message);
 				for(int i = 0; i < clients.size(); i++) {
 					ClientThread t = clients.get(i);
 					try {
-					 t.out.writeObject(message);
+					 t.out.writeObject(data);
 					}
 					catch(Exception e) {}
 				}
@@ -70,7 +71,6 @@ public class Server{
 				try {
 				String clientsOnServer = "";
 				ClientThread thisClient = clients.get(count-1);
-				System.out.println("Client#" + count);
 
 				for (int i = 0; i < clients.size() ; i++) {
 						ClientThread t = clients.get(i);
@@ -79,14 +79,14 @@ public class Server{
 							// Set the DataPackage to server data and send DataPackage out to client
 							data.setData(clientsOnServer);
 							thisClient.out.writeObject(data);
-							System.out.println("DataPackage Type:\t"+data.getType()+"\nDataPackage Message: \t"+data.getData()+"\n"); // Send dataPackage back to client
+							data.printDetails();
 						}catch (Exception e){e.printStackTrace();}
 			}
 
+
 			public void run(){
 				int flag = 1;
-				String data;
-				DataPackage dataPackage;
+				DataPackage data;
 				try {
 					in = new ObjectInputStream(connection.getInputStream());
 					out = new ObjectOutputStream(connection.getOutputStream());
@@ -100,17 +100,18 @@ public class Server{
 
 				 while(true) {
 					    try {
-							data = in.readObject().toString();
-							dataPackage = new DataPackage(); // Instantiate a new datapackage
-							dataPackage = (DataPackage)in.readObject(); // Case to datapackage
-							String dataType = dataPackage.getType();
+							data = (DataPackage)in.readObject(); // Case to datapackage
+							String dataType = data.getType();
 							System.out.println("______ New Data Package ______");
-
-								updateClientList(dataPackage);
-								//print a message to everyone
-								callback.accept("Client:" + count + "send: "+ data);
-								updateClients("client #"+count+" said "+ data);
-
+								if(dataType.equals("LIST")) {
+									data.printDetails();
+									updateClientList(data);
+								}
+								if (dataType.equals("MESSAGE")) {
+									data.printDetails();
+									callback.accept("Client:" + count + "send: " + data.getData());
+									updateClients("client #" + count + " said " + data.getData());
+								}
 					    	}
 					    catch(Exception e) {
 							callback.accept("OOOOPPs...Something wrong with the socket from client: " + count + "....closing down!");
