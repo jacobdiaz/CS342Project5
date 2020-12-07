@@ -12,6 +12,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -23,8 +24,8 @@ public class GuiServer extends Application{
 	Button serverChoice,clientChoice, sendToAllBtn;
 	HashMap<String, Scene> sceneMap;
 	GridPane grid;
-	HBox buttonBox, directMessageContainer;
-	VBox clientBox;
+	HBox buttonBox, directMessageRow;
+	VBox clientBox, allMessageContainer, directMessageContainer, bottomContainer;
 	Scene startScene;
 	BorderPane startPane;
 	Server serverConnection;
@@ -32,14 +33,16 @@ public class GuiServer extends Application{
 	
 	ListView<String> listItems, listItems2, listOfClients;
 	Button viewClientsBtn, sendDirectMessageBtn;
-	Label clientsLabel;
+	Label clientsLabel, dmHeader, allMessageHeader, dmInfo, allMessageInfo, messageClientLabel ;
+
 	public static void main(String[] args) {
 		launch(args);
 	}
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		// TODO Auto-generated method stub
+
+
 		primaryStage.setTitle("The Networked Client/Server GUI Example");
 		
 		this.serverChoice = new Button("Server");
@@ -64,10 +67,9 @@ public class GuiServer extends Application{
 											primaryStage.setTitle("Client");
 											clientConnection = new Client(data->{
 												DataPackage dp = (DataPackage) data; // Dp is sent from
-												if (dp.getType().equals("LIST")){
-													Platform.runLater(()->{
-														clientsLabel.setStyle("-fx-text-fill: white;");
-														clientsLabel.setText("Clients On Server: (Client Number) "+dp.getData().toString());
+												if(dp.getType().equals("LIST")) {
+													Platform.runLater(() -> {
+														clientsLabel.setText("Clients On Server: (Client Number) " + dp.getData().toString());
 													});
 												}
 												if(dp.getType().equals("MESSAGE")) {
@@ -87,7 +89,6 @@ public class GuiServer extends Application{
 											clientConnection.start();
 		});
 
-
 		// Start GUI
 		this.buttonBox = new HBox(400, serverChoice, clientChoice);
 		startPane = new BorderPane();
@@ -100,7 +101,9 @@ public class GuiServer extends Application{
 
 		// Client GUI
 		messageTextField = new TextField();
+		messageTextField.setPromptText("Message");
 		sendToAllBtn = new Button("Send to all!");
+		sendToAllBtn.getStyleClass().add("btn");
 		sendToAllBtn.setOnAction(e->{
 			DataPackage messagePackage = new DataPackage("MESSAGE", messageTextField.getText());
 			clientConnection.send(messagePackage);
@@ -109,17 +112,39 @@ public class GuiServer extends Application{
 
 		// View Clients btn
 		viewClientsBtn = new Button("View Clients");
+		viewClientsBtn.getStyleClass().add("btn");
 		viewClientsBtn.setOnAction(e->{
 			DataPackage listPackage = new DataPackage("LIST");
 			clientConnection.send(listPackage);
 		});
 		clientsLabel = new Label();
-
-		// Direct Message btn
-		directMessageContainer = new HBox(12);
-		directMessageTextField = new TextField("Message");
-		recipientsTextField = new TextField("Recipients");
+		clientsLabel.getStyleClass().add("p");
+		// Direct Message Col
+		directMessageContainer = new VBox(8);
+		directMessageRow = new HBox(12);
+		directMessageTextField = new TextField();
+		recipientsTextField = new TextField();
+		dmInfo = new Label("Direct messages allow you to send messages to multiple people or a single person!");
+		dmInfo.setWrapText(true);
+		dmInfo.setTextAlignment(TextAlignment.JUSTIFY);
+		messageClientLabel = new Label("Message                                               Recipients (Enter List of Client#)");
+		// Set Prompts
+		directMessageTextField.setPromptText("Message");
+		recipientsTextField.setPromptText("ex.) 1 2 3 4 5");
 		sendDirectMessageBtn = new Button("Send Direct Message");
+
+		dmHeader = new Label("Direct Message");
+		dmHeader.getStyleClass().add("h1");
+
+		allMessageHeader = new Label("General Message");
+		allMessageHeader.getStyleClass().add("h1");
+
+
+		allMessageInfo = new Label("General messages allow you to send messages to everyone!");
+		allMessageInfo.setWrapText(true);
+		allMessageInfo.setTextAlignment(TextAlignment.JUSTIFY);
+
+		// Set Action
 		sendDirectMessageBtn.setOnAction(e->{
 			if(directMessageTextField != null && recipientsTextField.getText() != null) {
 				DataPackage dmPackage = new DataPackage("DM", directMessageTextField.getText(), recipientsTextField.getText());
@@ -128,8 +153,18 @@ public class GuiServer extends Application{
 				recipientsTextField.clear();
 			}
 		});
-		directMessageContainer.getChildren().addAll(directMessageTextField,recipientsTextField);
+		sendDirectMessageBtn.getStyleClass().add("btn");
 
+		directMessageRow.getChildren().addAll(directMessageTextField,recipientsTextField);
+		directMessageContainer.getChildren().addAll(dmHeader,dmInfo,messageClientLabel,directMessageRow,sendDirectMessageBtn);
+		directMessageContainer.setPadding(new Insets(10));
+		directMessageContainer.getStyleClass().add("container");
+
+
+		allMessageContainer = new VBox(10);
+		allMessageContainer.setPadding(new Insets(10));
+		allMessageContainer.getStyleClass().add("container");
+		allMessageContainer.getChildren().addAll(allMessageHeader, allMessageInfo,messageTextField,sendToAllBtn);
 		sceneMap = new HashMap<String, Scene>();
 		sceneMap.put("server",  createServerGui());
 		sceneMap.put("client",  createClientGui());
@@ -141,7 +176,6 @@ public class GuiServer extends Application{
                 System.exit(0);
             }
         });
-
 		primaryStage.setScene(startScene);
 		primaryStage.show();
 	}
@@ -149,16 +183,16 @@ public class GuiServer extends Application{
 	public Scene createServerGui() {
 		BorderPane pane = new BorderPane();
 		pane.setPadding(new Insets(70));
-		pane.setStyle("-fx-background-color: coral");
+		pane.setStyle("-fx-background-color: #ffffff");
 		pane.setCenter(listItems);
 		return new Scene(pane, 500, 400);
 	}
-
 	
 	public Scene createClientGui() {
-		clientBox = new VBox(10, listItems2, messageTextField, sendToAllBtn,viewClientsBtn, clientsLabel,directMessageContainer,sendDirectMessageBtn);
-		clientBox.setStyle("-fx-background-color: blue");
-		return new Scene(clientBox, 500, 600);
+		clientBox = new VBox(8, listItems2,allMessageContainer, directMessageContainer,viewClientsBtn,clientsLabel);
+		clientBox.setStyle("-fx-background-color: #eaebec");
+		Scene clientScene = new Scene(clientBox, 600, 700);
+		clientScene.getStylesheets().addAll("styles.css");
+		return clientScene;
 	}
-
 }

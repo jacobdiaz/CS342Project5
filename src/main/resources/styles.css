@@ -1,0 +1,23 @@
+.btn{
+    -fx-background-color: #F53B64;
+    -fx-font-size: 9pt;
+    -fx-text-fill: white;
+}
+.h1{
+    -fx-font-size: 16pt;
+    -fx-font-weight: bold;
+}
+.h2{
+    -fx-font-size: 8pt;
+}
+.p{
+    -fx-text-fill:  #F53B64;
+    -fx-font-size: 12pt;
+    }
+.container{
+    -fx-background-color: #ffffff;
+        -fx-padding: 20px;
+        -fx-border-insets: 5px;
+        -fx-background-insets: 5px;
+        -fx-background-radius: 6, 6, 6, 6;
+}

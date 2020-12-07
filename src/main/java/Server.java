@@ -123,7 +123,7 @@ public class Server{
 									data.printDetails();
 									callback.accept("Client:" + count + "send: " + data.getData());
 									synchronized (this) {
-										updateClients("client #" + count + " said " + data.getData());
+										updateClients("(TO ALL) Client #" + count + " : " + data.getData());
 										}
 									}
 								if(dataType.equals("DM")){
