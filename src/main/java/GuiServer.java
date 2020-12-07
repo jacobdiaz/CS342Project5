@@ -75,11 +75,6 @@ public class GuiServer extends Application{
 														System.out.println(dp.getData());
 														listItems2.getItems().add(((DataPackage) data).getData().toString());
 													});
-													if(dp.getType().equals("DM")){
-														Platform.runLater(()->{
-															System.out.println(dp.getData());
-														});
-													}
 												}
 
 												if(dp.getType().equals("DM")){
@@ -158,10 +153,12 @@ public class GuiServer extends Application{
 		pane.setCenter(listItems);
 		return new Scene(pane, 500, 400);
 	}
+
 	
 	public Scene createClientGui() {
 		clientBox = new VBox(10, listItems2, messageTextField, sendToAllBtn,viewClientsBtn, clientsLabel,directMessageContainer,sendDirectMessageBtn);
 		clientBox.setStyle("-fx-background-color: blue");
 		return new Scene(clientBox, 500, 600);
 	}
+
 }

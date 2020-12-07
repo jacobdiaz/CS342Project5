@@ -52,7 +52,7 @@ public class Server{
 				this.connection = s;
 				this.count = count;	
 			}
-
+			// TODO Make these functions thread safe!
 			public void updateClients(String message) {
 				DataPackage data = new DataPackage("MESSAGE", message);
 				for(int i = 0; i < clients.size(); i++) {
@@ -80,9 +80,11 @@ public class Server{
 						}catch (Exception e){e.printStackTrace();}
 			}
 
-			public void sendToRecipients(DataPackage data){
+			public void sendToRecipients(String message, String recipients){
 				try{
-					String recipients = data.getRecipients();
+					recipients += " "+count; // Include the sender
+					DataPackage data = new DataPackage("DM", message);
+
 					String []listOfRecipients = recipients.split("\\W+"); // Get each client number from recipient text
 					for (int i = 0; i < listOfRecipients.length; i++) {
 						int r = Integer.parseInt(listOfRecipients[i]);
@@ -91,7 +93,6 @@ public class Server{
 					}
 				}catch (Exception e){e.printStackTrace();}
 			}
-
 
 			public void run(){
 				int flag = 1;
@@ -114,23 +115,31 @@ public class Server{
 							System.out.println("______ New Data Package ______");
 								if(dataType.equals("LIST")) {
 									data.printDetails();
-									updateClientList(data);
+									synchronized (this) {
+										updateClientList(data);
+									}
 								}
 								if (dataType.equals("MESSAGE")) {
 									data.printDetails();
 									callback.accept("Client:" + count + "send: " + data.getData());
-									updateClients("client #" + count + " said " + data.getData());
-								}
+									synchronized (this) {
+										updateClients("client #" + count + " said " + data.getData());
+										}
+									}
 								if(dataType.equals("DM")){
 									callback.accept("(Grouped message) Client:" + count + "send: " + data.getData());
 									data.printDmDetails();
-									sendToRecipients(data);
+									synchronized (this) {
+										sendToRecipients("(DM) Client #"+count+" "+data.getData().toString(),data.getRecipients());
+									}
 								}
 					    	}
 					    catch(Exception e) {
 							callback.accept("OOOOPPs...Something wrong with the socket from client: " + count + "....closing down!");
-					    	updateClients("Client #"+count+" has left the server!");
-					    	clients.remove(this);
+							synchronized (this) {
+								updateClients("Client #" + count + " has left the server!");
+							}
+							clients.remove(this);
 					    	break;
 					    }
 					}
